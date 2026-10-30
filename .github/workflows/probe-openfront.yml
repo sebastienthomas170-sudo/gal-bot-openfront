@@ -1,0 +1,38 @@
+name: Vérifier l'accès public OpenFront
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  probe:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Récupérer le dépôt
+        uses: actions/checkout@v4
+
+      - name: Installer Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Installer les dépendances
+        run: npm install
+
+      - name: Installer Chromium
+        run: npx playwright install --with-deps chromium
+
+      - name: Tester l'accès public sans compte
+        run: npm run probe
+
+      - name: Publier le rapport de diagnostic
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: diagnostic-openfront
+          path: diagnostic-openfront.json
+          if-no-files-found: ignore
+          retention-days: 7
